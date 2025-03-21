@@ -17,6 +17,7 @@ Ce projet est réalisé dans le cadre de l'UE de Projet du Master 1 DAC sous la 
 | /docs              | Documentation du projet                     |
 | ├── /cr            | Comptes rendus hebdomadaire                 |
 | └── /notebooks     | Notebooks liés au projet                    |
+| └── /analyse DQN   | Analyses sur des env gym différents         |
 | /results           | Résultats et logs des expériences           |
 | README.md          | Présentation du projet                      |
 | .gitignore         | Fichiers à ignorer par Git                  |
