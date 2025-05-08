@@ -1,6 +1,6 @@
-from pointmaze import GridWorldEnv
+from PointMaze import PointMazeEnv
 
-env = GridWorldEnv(render_mode="human",size=11)
+env = PointMazeEnv(render_mode="human",size=11)
 obs, _ = env.reset()
 
 while(True):

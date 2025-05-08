@@ -4,7 +4,7 @@ import pygame
 import numpy as np
 
 
-class GridWorldEnv(gym.Env):
+class PointMazeEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
     
 
