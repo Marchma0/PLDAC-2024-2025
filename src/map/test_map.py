@@ -1,16 +1,14 @@
-import mujoco
-import numpy as np
+from pointmaze import GridWorldEnv
 
-# Charger le modèle
-model = mujoco.MjModel.from_xml_path("pointmaze_impasse.xml")
-data = mujoco.MjData(model)
+env = GridWorldEnv(render_mode="human",size=11)
+obs, _ = env.reset()
 
-# Initialiser le renderer avec une fenêtre affichable
-renderer = mujoco.Renderer(model)
+while(True):
+    action = env.action_space.sample()
+    obs, reward, done, _, _ = env.step(action)
+    env.render()
+    if done:
+        print("Goal reached!")
+        break
 
-# Simulation et rendu
-data.ctrl[:] = [1.0, 1.0]
-for _ in range(100):
-    mujoco.mj_step(model, data)
-    renderer.update_scene(data)
-    renderer.render_to_window()  # Affiche dans une fenêtre
+env.close()
