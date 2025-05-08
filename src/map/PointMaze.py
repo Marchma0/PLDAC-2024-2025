@@ -1,5 +1,5 @@
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 import pygame
 import numpy as np
 
@@ -8,7 +8,7 @@ class PointMazeEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
     
 
-    def __init__(self, render_mode=None, size=5):
+    def __init__(self, render_mode=None, size=11):
         self.size = size  # The size of the square grid
         self.window_size = 512  # The size of the PyGame window
         self._walls = [np.array([x, 5]) for x in range(3, 8)] + \
@@ -16,13 +16,9 @@ class PointMazeEnv(gym.Env):
             [np.array([7, y]) for y in range(2, 6)]
 
 
-        # Observations are dictionaries with the agent's and the target's location.
-        # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
-        self.observation_space = spaces.Dict(
-            {
-                "agent": spaces.Box(0, size - 1, shape=(2,), dtype=int),
-                "target": spaces.Box(0, size - 1, shape=(2,), dtype=int),
-            }
+        
+        self.observation_space = spaces.Box(
+            low=0.0, high=self.size - 1, shape=(4,), dtype=np.float32
         )
 
         # We have 4 actions, corresponding to "right", "up", "left", "down", "right"
@@ -54,7 +50,9 @@ class PointMazeEnv(gym.Env):
         self.clock = None
 
     def _get_obs(self):
-        return {"agent": self._agent_location, "target": self._target_location}
+        obs = np.concatenate([self._agent_location, self._target_location]).astype(np.float32)
+        assert obs.shape == (4,), f"Expected shape (4,), got {obs.shape}"
+        return obs
 
     def _get_info(self):
         return {
@@ -66,17 +64,22 @@ class PointMazeEnv(gym.Env):
     def reset(self, seed=None, options=None):
         # We need the following line to seed self.np_random
         super().reset(seed=seed)
-
-        # Choose the agent's location uniformly at random
+        self._step_count = 0
+        self._max_steps = 100  # par exemple
+        
+        # Choose the agent's and target's location 
         self._agent_location = np.array([5,2])
-        # We will sample the target's location randomly until it does not coincide with the agent's location
         self._target_location = np.array([5,8])
+
         while np.array_equal(self._target_location, self._agent_location):
             self._target_location = self.np_random.integers(
                 0, self.size, size=2, dtype=int
             )
 
         observation = self._get_obs()
+        #print(observation)
+        assert self.observation_space.contains(observation), "Invalid observation!"
+
         info = self._get_info()
 
         if self.render_mode == "human":
@@ -97,15 +100,19 @@ class PointMazeEnv(gym.Env):
         # Sinon, l'agent reste sur place
         
         # An episode is done iff the agent has reached the target
+        self._step_count += 1
         terminated = np.array_equal(self._agent_location, self._target_location)
+        truncated = self._step_count >= self._max_steps  # <- ajouté
+
         reward = 1 if terminated else 0  # Binary sparse rewards
         observation = self._get_obs()
+        assert self.observation_space.contains(observation), "Invalid observation!"
         info = self._get_info()
 
         if self.render_mode == "human":
             self._render_frame()
 
-        return observation, reward, terminated, False, info
+        return observation, reward, terminated, truncated, info
 
     def render(self):
         if self.render_mode == "rgb_array":
