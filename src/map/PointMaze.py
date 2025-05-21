@@ -97,14 +97,18 @@ class PointMazeEnv(gym.Env):
         )
         if not any(np.array_equal(new_location, wall) for wall in self._walls):
             self._agent_location = new_location
-        # Sinon, l'agent reste sur place
+        else :
+            # Sinon, l'agent reste sur place
+            reward =-1
         
         # An episode is done iff the agent has reached the target
         self._step_count += 1
         terminated = np.array_equal(self._agent_location, self._target_location)
         truncated = self._step_count >= self._max_steps  # <- ajouté
+        if truncated:
+            reward = -10
 
-        reward = 1 if terminated else 0  # Binary sparse rewards
+        reward = 100 if terminated else -1  # Binary sparse rewards
         observation = self._get_obs()
         assert self.observation_space.contains(observation), "Invalid observation!"
         info = self._get_info()
